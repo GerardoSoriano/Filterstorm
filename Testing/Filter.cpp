@@ -1,56 +1,47 @@
 #include "Filter.h"
 
-struct Coord
-{
-	int x;
-	int y;
-};
-
 Vec3b Filter::apply_median(Mat img, uint x, uint y)
 {
-	//Declaramos todas las variables que utilizaremos
 	float	b, g, r;
 	float	sum_b = 0, sum_g = 0, sum_r = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		1, 1, 1,
+		1, 1, 1,
+		1, 1, 1
 	};
 
-	//Este for nos sirve para recorrer el dominio de posciones
-	//a los cuales se va a afectar.
-	for (int i = 0; i < 9; i++)
-	{
-		//Para cada posición, limpiamos el rastro de los demas colores
-		b = 0; g = 0; r = 0;
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			pX = x + j;
+			pY = y + i;
 
-		//Obtenemos el pixel y sus propiedades r g b
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
+			if (pX > img.cols - 1 || pY > img.rows - 1) {
+				sum_b = sum_b + 0;
+				sum_g = sum_g + 0;
+				sum_r = sum_r + 0;
+			}
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
 
-		//Vamos haciendo la sumatoria a medida que va recorriendo las poisciones
-		sum_b += b;
-		sum_g += g;
-		sum_r += r;
-	}
+				sum_b = sum_b + mask[j][i] * b;
+				sum_g = sum_g + mask[j][i] * g;
+				sum_r = sum_r + mask[j][i] * r;
+			}
+		}
 
-	//Aquí dividimos por cada posicion que existe en el arreglo
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 9;
-	sum_g /= 9;
-	sum_r /= 9;
+	sum_b = sum_b / 9;
+	sum_g = sum_g / 9;
+	sum_r = sum_r / 9;
 
-	//Establecemos rango de 0 a 255 
 	if (sum_b < 0)
 		sum_b = 0;
 	if (sum_g < 0)
@@ -65,12 +56,10 @@ Vec3b Filter::apply_median(Mat img, uint x, uint y)
 	if (sum_r > 255)
 		sum_r = 255;
 
-	//El pixel a devolver es la sumatoria
 	result[0] = sum_b;
 	result[1] = sum_g;
 	result[2] = sum_r;
 
-	//retornamos
 	return result;
 }
 
@@ -80,44 +69,41 @@ Vec3b Filter::apply_weighted_median(Mat img, uint x, uint y, uint weight)
 	float	sum_b = 0, sum_g = 0, sum_r = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		1,		1, 1,
+		1, weight, 1,
+		1,		1, 1
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
-
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
-
-		if (matrix[i].x == int(x) && matrix[i].y == int(y))
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			sum_b += b * weight;
-			sum_g += g * weight;
-			sum_r += r * weight;
-		}else
-		{
-			sum_b += b;
-			sum_g += g;
-			sum_r += r;
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1) {
+				sum_b = sum_b + 0;
+				sum_g = sum_g + 0;
+				sum_r = sum_r + 0;
+			}
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				sum_b = sum_b + mask[j][i] * b;
+				sum_g = sum_g + mask[j][i] * g;
+				sum_r = sum_r + mask[j][i] * r;
+			}
 		}
-	}
 
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 8 + weight;
-	sum_g /= 8 + weight;
-	sum_r /= 8 + weight;
+	sum_b = sum_b / (8 + weight);
+	sum_g = sum_g / (8 + weight);
+	sum_r = sum_r / (8 + weight);
 
 	if (sum_b < 0)
 		sum_b = 0;
@@ -146,45 +132,41 @@ Vec3b Filter::apply_minus_median(Mat img, uint x, uint y)
 	float	sum_b = 0, sum_g = 0, sum_r = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		-1, -1, -1,
+		-1,  8, -1,
+		-1, -1, -1
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
-
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
-
-		if (matrix[i].x == int(x) && matrix[i].y == int(y))
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			sum_b += b * 8;
-			sum_g += g * 8;
-			sum_r += r * 8;
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1) {
+				sum_b = sum_b + 0;
+				sum_g = sum_g + 0;
+				sum_r = sum_r + 0;
+			}
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				sum_b = sum_b + mask[j][i] * b;
+				sum_g = sum_g + mask[j][i] * g;
+				sum_r = sum_r + mask[j][i] * r;
+			}
 		}
-		else
-		{
-			sum_b += b * -1;
-			sum_g += g * -1;
-			sum_r += r * -1;
-		}
-	}
 
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 9;
-	sum_g /= 9;
-	sum_r /= 9;
+	sum_b = sum_b / 9;
+	sum_g = sum_g / 9;
+	sum_r = sum_r / 9;
 
 	if (sum_b < 0)
 		sum_b = 0;
@@ -207,335 +189,261 @@ Vec3b Filter::apply_minus_median(Mat img, uint x, uint y)
 	return result;
 }
 
-/*Vec3b Filter::apply_gaussian(Mat img, uint x, uint y)
-{
-}*/
-
 Vec3b Filter::apply_laplacian(Mat img, uint x, uint y)
 {
-	float	average;
-	float	sum_averge = 0;
 	float	b, g, r;
-	float	sum_b = 0, sum_g = 0, sum_r = 0;
+	float	gray, sum = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = { 
+		0,  1, 0, 
+		1, -4, 1, 
+		0,  1, 0 
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
-
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
-
-		average = (b + g + r) / 3;
-
-		if (i == 4)
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			sum_averge += average * -4;
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1)
+				sum = sum + 0;
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				gray = (b + g + r) / 3;
+
+				sum = sum + mask[j][i] * gray;
+			}
 		}
-		else if(i == 1 || i == 3 || i == 5 || i == 7)
-		{
-			sum_averge += average;
-		}
-	}
+
+	if (sum > 255)
+		sum = 255;
+	if (sum < 0)
+		sum = 0;
 
 	result = img.at<Vec3b>(Point(x, y));
-	/*sum_b /= 4;
-	sum_g /= 4;
-	sum_r /= 4;*/
-
-	/*if (sum_b < 0)
-		sum_b = 0;
-	if (sum_g < 0)
-		sum_g = 0;
-	if (sum_r < 0)
-		sum_r = 0;
-
-	if (sum_b > 255)
-		sum_b = 255;
-	if (sum_g > 255)
-		sum_g = 255;
-	if (sum_r > 255)
-		sum_r = 255;*/
-
-	if (sum_averge < 0)
-		sum_averge = 0;
-	if (sum_averge > 255)
-		sum_averge = 255;
-
-	result[0] = sum_averge;
-	result[1] = sum_averge;
-	result[2] = sum_averge;
+	result[0] = sum;
+	result[1] = sum;
+	result[2] = sum;
 
 	return result;
 }
 
 Vec3b Filter::apply_minus_laplacian(Mat img, uint x, uint y)
 {
-	int		average;
 	float	b, g, r;
-	float	sum_b = 0, sum_g = 0, sum_r = 0;
+	float	gray, sum = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		 0, -1,  0,
+		-1,  5, -1,
+		 0, -1,  0
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
-
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
-
-		average = (int)(b + g + r) / 3;
-
-		if (matrix[i].x == int(x) && matrix[i].y == int(y))
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			sum_b += average * 5;
-			sum_g += average * 5;
-			sum_r += average * 5;
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1)
+				sum = sum + 0;
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				gray = (b + g + r) / 3;
+
+				sum = sum + mask[j][i] * gray;
+			}
 		}
-		else if ((matrix[i].x == matrix[0].x && matrix[i].y == matrix[0].y) ||
-				 (matrix[i].x == matrix[2].x && matrix[i].y == matrix[2].y) ||
-				 (matrix[i].x == matrix[6].x && matrix[i].y == matrix[6].y) ||
-				 (matrix[i].x == matrix[8].x && matrix[i].y == matrix[8].y))
-		{
-			sum_b += average * 0;
-			sum_g += average * 0;
-			sum_r += average * 0;
-		}
-		else
-		{
-			sum_b += average * -1;
-			sum_g += average * -1;
-			sum_r += average * -1;
-		}
-	}
+
+	if (sum > 255)
+		sum = 255;
+	if (sum < 0)
+		sum = 0;
 
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 1;
-	sum_g /= 1;
-	sum_r /= 1;
-
-	if (sum_b < 0)
-		sum_b = 0;
-	if (sum_g < 0)
-		sum_g = 0;
-	if (sum_r < 0)
-		sum_r = 0;
-
-	if (sum_b > 255)
-		sum_b = 255;
-	if (sum_g > 255)
-		sum_g = 255;
-	if (sum_r > 255)
-		sum_r = 255;
-
-	result[0] = sum_b;
-	result[1] = sum_g;
-	result[2] = sum_r;
+	result[0] = sum;
+	result[1] = sum;
+	result[2] = sum;
 
 	return result;
 }
 
 Vec3b Filter::apply_directional_north(Mat img, uint x, uint y)
 {
-	int		average;
 	float	b, g, r;
-	float	sum_b = 0, sum_g = 0, sum_r = 0;
+	float	gray, sum = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		 1,  1,  1,
+		 1, -2,  1,
+		-1, -1, -1
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
-
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
-
-		average = (b + g + r) / 3;
-
-		if (matrix[i].x == int(x) && matrix[i].y == int(y))
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			sum_b += average * -2;
-			sum_g += average * -2;
-			sum_r += average * -2;
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1)
+				sum = sum + 0;
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				gray = (b + g + r) / 3;
+
+				sum = sum + mask[j][i] * gray;
+			}
 		}
-		else if (matrix[i].y == matrix[6].y ||
-				 matrix[i].y == matrix[7].y ||
-				 matrix[i].y == matrix[8].y)
-		{
-			sum_b += average * -1;
-			sum_g += average * -1;
-			sum_r += average * -1;
-		}
-		else
-		{
-			sum_b += average;
-			sum_g += average;
-			sum_r += average;
-		}
-	}
+
+	if (sum > 255)
+		sum = 255;
+	if (sum < 0)
+		sum = 0;
 
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 1;
-	sum_g /= 1;
-	sum_r /= 1;
-
-	if (sum_b < 0)
-		sum_b = 0;
-	if (sum_g < 0)
-		sum_g = 0;
-	if (sum_r < 0)
-		sum_r = 0;
-
-	if (sum_b > 255)
-		sum_b = 255;
-	if (sum_g > 255)
-		sum_g = 255;
-	if (sum_r > 255)
-		sum_r = 255;
-
-	result[0] = sum_b;
-	result[1] = sum_g;
-	result[2] = sum_r;
+	result[0] = sum;
+	result[1] = sum;
+	result[2] = sum;
 
 	return result;
 }
 
-Vec3b Filter::apply_directional_south(Mat img, uint x, uint y)
+Vec3b Filter::apply_directional_east(Mat img, uint x, uint y)
 {
 	float	b, g, r;
-	float	sum_b = 0, sum_g = 0, sum_r = 0;
+	float	gray, sum = 0;
 	Vec3b	pixel;
 	Vec3b	result;
-	Coord	matrix[9] = {
-		{ x - 1,	y - 1 },
-		{ x,		y - 1 },
-		{ x + 1,	y - 1 },
-		{ x - 1,	y },
-		{ x,		y },
-		{ x + 1,	y },
-		{ x - 1,	y + 1 },
-		{ x,		y + 1 },
-		{ x + 1,	y + 1 },
+	int		pX, pY;
+	int		mask[3][3] = {
+		-1,  1,  1,
+		-1, -2,  1,
+		-1,  1,  1
 	};
 
-	for (int i = 0; i < 9; i++)
-	{
-		b = 0; g = 0; r = 0;
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			pX = x + j;
+			pY = y + i;
 
-		pixel = img.at<Vec3b>(Point(matrix[i].x, matrix[i].y));
-		b = pixel[0];
-		g = pixel[1];
-		r = pixel[2];
+			if (pX > img.cols - 1 || pY > img.rows - 1)
+				sum = sum + 0;
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
 
-		if (matrix[i].x == int(x) && matrix[i].y == int(y))
-		{
-			sum_b += b * -2;
-			sum_g += g * -2;
-			sum_r += r * -2;
+				gray = (b + g + r) / 3;
+
+				sum = sum + mask[j][i] * gray;
+			}
 		}
-		else if (matrix[i].y == matrix[0].y ||
-				 matrix[i].y == matrix[1].y ||
-				 matrix[i].y == matrix[2].y)
-		{
-			sum_b += b * -1;
-			sum_g += g * -1;
-			sum_r += r * -1;
-		}
-		else
-		{
-			sum_b += b;
-			sum_g += g;
-			sum_r += r;
-		}
-	}
+
+	if (sum > 255)
+		sum = 255;
+	if (sum < 0)
+		sum = 0;
 
 	result = img.at<Vec3b>(Point(x, y));
-	sum_b /= 1;
-	sum_g /= 1;
-	sum_r /= 1;
-
-	if (sum_b < 0)
-		sum_b = 0;
-	if (sum_g < 0)
-		sum_g = 0;
-	if (sum_r < 0)
-		sum_r = 0;
-
-	if (sum_b > 255)
-		sum_b = 255;
-	if (sum_g > 255)
-		sum_g = 255;
-	if (sum_r > 255)
-		sum_r = 255;
-
-	result[0] = sum_b;
-	result[1] = sum_g;
-	result[2] = sum_r;
+	result[0] = sum;
+	result[1] = sum;
+	result[2] = sum;
 
 	return result;
 }
 
-Vec3b Filter::apply_gray_scale(Mat img, uint x, uint y)
+Vec3b Filter::apply_grayscale_average(Mat img, uint x, uint y)
 {
-	int		average;
 	float	b, g, r;
+	float	gray;
 	Vec3b	pixel;
 	Vec3b	result;
-
-	b = 0; g = 0; r = 0;
 
 	pixel = img.at<Vec3b>(Point(x, y));
 	b = pixel[0];
 	g = pixel[1];
 	r = pixel[2];
 
-	average = (int)(b + g + r) / 3;
+	gray = (b + g + r) / 3;
+
 
 	result = img.at<Vec3b>(Point(x, y));
+	result[0] = gray;
+	result[1] = gray;
+	result[2] = gray;
 
-	result[0] = average;
-	result[1] = average;
-	result[2] = average;
+	return result;
+}
+
+Vec3b Filter::apply_grayscale_luminosity(Mat img, uint x, uint y)
+{
+	float	b, g, r;
+	float	gray;
+	Vec3b	pixel;
+	Vec3b	result;
+
+	pixel = img.at<Vec3b>(Point(x, y));
+	b = pixel[0];
+	g = pixel[1];
+	r = pixel[2];
+
+	gray = (r*0.3)+(g*0.59)+(b*0.11);
+
+
+	result = img.at<Vec3b>(Point(x, y));
+	result[0] = gray;
+	result[1] = gray;
+	result[2] = gray;
+
+	return result;
+}
+
+Vec3b Filter::apply_sepia(Mat img, uint x, uint y)
+{
+	float	b, g, r;
+	float	fb, fg, fr;
+	float	gray;
+	Vec3b	pixel;
+	Vec3b	result;
+
+	pixel = img.at<Vec3b>(Point(x, y));
+	b = pixel[0];
+	g = pixel[1];
+	r = pixel[2];
+
+	fr = ((r*0.393) + (g*0.769) + (b*0.189)) / 2;
+	fg = ((r*0.349) + (g*0.686) + (b*0.168)) / 2;
+	fb = ((r*0.272) + (g*0.534) + (b*0.131)) / 2;
+
+	result = img.at<Vec3b>(Point(x, y));
+	result[0] = fb;
+	result[1] = fg;
+	result[2] = fr;
 
 	return result;
 }
@@ -575,12 +483,6 @@ Mat Filter::apply(string path, uint filter)
 			case F_DIRECTIONAL_NORTH:
 				color = apply_directional_north(img, x, y);
 				break;
-			case F_DIRECTIONAL_SOUTH:
-				color = apply_directional_south(img, x, y);
-				break;
-			case F_GRAY_SCALE:
-				color = apply_gray_scale(img, x, y);
-				break;
 			}
 			img.at<Vec3b>(Point(x, y)) = color;
 		}
@@ -601,20 +503,13 @@ Mat Filter::apply(Mat img, uint filter)
 				color = apply_median(img, x, y);
 				break;
 			case F_WEIGHTED_MEDIAN:
-				color = apply_weighted_median(img, x, y, 10);
+				color = apply_weighted_median(img, x, y, 9);
 				break;
 			case F_MINUS_MEDIAN:
 				color = apply_minus_median(img, x, y);
 				break;
-			case F_GAUSSIAN:
-				result[0] = 255;
-				result[1] = 255;
-				result[2] = 255;
-				color = result;
-				break;
 			case F_LAPLACIAN:
 				color = apply_laplacian(img, x, y);
-				//cout << color << endl;
 				break;
 			case F_MINUS_LAPLACIAN:
 				color = apply_minus_laplacian(img, x, y);
@@ -622,11 +517,17 @@ Mat Filter::apply(Mat img, uint filter)
 			case F_DIRECTIONAL_NORTH:
 				color = apply_directional_north(img, x, y);
 				break;
-			case F_DIRECTIONAL_SOUTH:
-				color = apply_directional_south(img, x, y);
+			case F_DIRECTIONAL_EAST:
+				color = apply_directional_east(img, x, y);
 				break;
-			case F_GRAY_SCALE:
-				color = apply_gray_scale(img, x, y);
+			case F_GRAYSCALE_AVERAGE:
+				color = apply_grayscale_average(img, x, y);
+				break;
+			case F_GRAYSCALE_LUMINOSITY:
+				color = apply_grayscale_luminosity(img, x, y);
+				break;
+			case F_SEPIA:
+				color = apply_sepia(img, x, y);
 				break;
 			}
 			img.at<Vec3b>(Point(x, y)) = color;

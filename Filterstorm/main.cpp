@@ -4,9 +4,6 @@
 #include "resource.h"
 #include <minwinbase.h>
 #include <winuser.h>
-#include <winuser.h>
-#include <winuser.h>
-#include <winuser.h>
 using namespace Gdiplus;
 
 HINSTANCE hInst;
