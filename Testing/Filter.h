@@ -34,11 +34,11 @@ using namespace std;
  * Menos laplaciano					-OK
  * Direccional norte				-OK
  * Direccional este					-OK
- * Gris promedio					-WAIT
- * Gris por luminosidad				-WAIT
+ * Gris promedio					-OK
+ * Gris por luminosidad				-OK
  * Gris por luminancia				-WAIT
- * Sepia							-WAIT
- * Sobel							-WAIT
+ * Sepia							-OK
+ * Sobel							-OK
  * Gaussiano						-WAIT
  * Histograma normazilado			-WAIT
  * Histograma ecualizado simple		-WAIT

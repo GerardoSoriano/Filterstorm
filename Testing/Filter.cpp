@@ -448,6 +448,62 @@ Vec3b Filter::apply_sepia(Mat img, uint x, uint y)
 	return result;
 }
 
+Vec3b Filter::apply_sobel(Mat img, uint x, uint y)
+{
+	float	b, g, r;
+	float	gray, sum_x = 0, sum_y = 0, sum;
+	Vec3b	pixel;
+	Vec3b	result;
+	int		pX, pY;
+	int		maskX[3][3] = {
+		-1, 0, 1,
+		-2, 0, 2,
+		-1, 0, 1
+	};
+	int		maskY[3][3] = {
+		-1, -2, -1,
+		 0,  0,  0,
+		 1,  2,  1
+	};
+
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			pX = x + j;
+			pY = y + i;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1) {
+				sum_x = sum_x + 0;
+				sum_y = sum_y + 0;
+			}
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				gray = (b + g + r) / 3;
+
+				sum_x = sum_x + maskX[j][i] * gray;
+				sum_y = sum_y + maskY[j][i] * gray;
+			}
+		}
+	sum = sqrt(pow(sum_x, 2) + pow(sum_y, 2));
+
+	if (sum > 255)
+		sum = 255;
+	if (sum < 0)
+		sum = 0;
+
+	result = img.at<Vec3b>(Point(x, y));
+	result[0] = sum;
+	result[1] = sum;
+	result[2] = sum;
+
+	return result;
+}
+
 Mat Filter::apply(string path, uint filter)
 {
 	Mat img = imread(path);
@@ -528,6 +584,9 @@ Mat Filter::apply(Mat img, uint filter)
 				break;
 			case F_SEPIA:
 				color = apply_sepia(img, x, y);
+				break;
+			case F_SOBEL:
+				color = apply_sobel(img, x, y);
 				break;
 			}
 			img.at<Vec3b>(Point(x, y)) = color;
