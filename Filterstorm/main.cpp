@@ -4,13 +4,26 @@
 #include "resource.h"
 #include <minwinbase.h>
 #include <winuser.h>
+#include <string>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/objdetect/objdetect.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/background_segm.hpp>
+#include <opencv2/opencv.hpp>
+#include <cmath>
+using namespace cv;
+using namespace std;
 using namespace Gdiplus;
+
 
 HINSTANCE hInst;
 
 BOOL CALLBACK DialogProcedure(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ImageProcedure(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK VideoProcedure(HWND, UINT, WPARAM, LPARAM);
+
+bool passOpenCVImageToControl(HWND, string);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdParam, int nCmdShow)
 {
@@ -65,13 +78,17 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	OPENFILENAME ofn;
 	WCHAR path[260];
 
-	HBITMAP image;
 	HWND pic_image;
+	Mat image;
 
 	switch (msg)
 	{
 	case WM_INITDIALOG:
 		pic_image = GetDlgItem(hwnd, PIC_IMAGE);
+		passOpenCVImageToControl(GetDlgItem(hwnd, PIC_IMAGE), "yolo");
+		image = imread(R"(C:\Users\gerar\OneDrive\Imágenes\Laura.jpg)");
+		imshow("yolo", image);
+		waitKey(1);
 		return TRUE;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -93,8 +110,6 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (GetOpenFileName(&ofn) == TRUE)
 			{
 				SetDlgItemText(hwnd, LBL_PATH, path);
-				image = LoadBitmap(hInst, path);
-				SendDlgItemMessage(hwnd, PIC_IMAGE, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)image);
 			}
 			break;
 		}
@@ -104,4 +119,24 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return FALSE;
+}
+
+bool passOpenCVImageToControl(HWND parentWnd, string nombreShow)
+{
+	string WIN_NAME_CV = nombreShow;
+
+	namedWindow(WIN_NAME_CV, CV_WINDOW_KEEPRATIO);
+
+	HWND cvWnd = (HWND)cvGetWindowHandle(WIN_NAME_CV.c_str());
+	if (!cvWnd) return false;
+
+	HWND hOldParent = ::GetParent(cvWnd);
+	::SetParent(cvWnd, parentWnd);
+	::ShowWindow(hOldParent, SW_HIDE);
+
+	//Ajustes varios
+	RECT parentRect;
+	::GetClientRect(parentWnd, &parentRect);
+	cvResizeWindow(WIN_NAME_CV.c_str(), parentRect.right, parentRect.bottom);
+	return true;
 }
