@@ -14,7 +14,7 @@ int main()
 		cout << "No se pudo abrir la imagen chavo" << endl;
 		return -1;
 	}
-	Mat image2 = Filter::apply(image.clone(), F_SEPIA);
+	Mat image2 = Filter::apply(image.clone(), F_GAUSSIAN);
 	Mat image3 = Filter::apply(image.clone(), F_SOBEL);
 
 	cout << "Tu imagen es de: " << image.cols << " x " << image.rows << endl;

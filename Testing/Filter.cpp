@@ -504,6 +504,88 @@ Vec3b Filter::apply_sobel(Mat img, uint x, uint y)
 	return result;
 }
 
+Vec3b Filter::apply_gaussian(Mat img, uint x, uint y, float sigma)
+{
+	//Primero que nada, obtenemos la mascara preeliminar
+	float	pre[3][3], product;
+	int		mask[3][3], sum_mask = 0;
+
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			int px = j - 1,
+				py = i - 1;
+
+			product = 0;
+			product = (px * px) + (py * py);
+			product = product / (sigma * sigma);
+			product = exp(-product);
+			product = product / (2 * 3.1416 * (sigma * sigma));
+			pre[i][j] = product;
+		}
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			mask[i][j] = (int)(pre[i][j] / pre[0][0]);
+			sum_mask += mask[i][j];
+		}
+
+	float	b, g, r;
+	float	sum_b = 0, sum_g = 0, sum_r = 0;
+	Vec3b	pixel;
+	Vec3b	result;
+	int		pX, pY;
+
+	for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
+		{
+			pX = x + j -1;
+			pY = y + i -1;
+
+			if (pX > img.cols - 1 || pY > img.rows - 1) {
+				sum_b = sum_b + 0;
+				sum_g = sum_g + 0;
+				sum_r = sum_r + 0;
+			}
+			else
+			{
+				pixel = img.at<Vec3b>(Point(pX, pY));
+				b = pixel[0];
+				g = pixel[1];
+				r = pixel[2];
+
+				sum_b = sum_b + mask[j][i] * b;
+				sum_g = sum_g + mask[j][i] * g;
+				sum_r = sum_r + mask[j][i] * r;
+			}
+		}
+
+	result = img.at<Vec3b>(Point(x, y));
+	sum_b = sum_b / sum_mask;
+	sum_g = sum_g / sum_mask;
+	sum_r = sum_r / sum_mask;
+
+	if (sum_b < 0)
+		sum_b = 0;
+	if (sum_g < 0)
+		sum_g = 0;
+	if (sum_r < 0)
+		sum_r = 0;
+
+	if (sum_b > 255)
+		sum_b = 255;
+	if (sum_g > 255)
+		sum_g = 255;
+	if (sum_r > 255)
+		sum_r = 255;
+
+	result[0] = sum_b;
+	result[1] = sum_g;
+	result[2] = sum_r;
+
+	return result;
+}
+
 Mat Filter::apply(string path, uint filter)
 {
 	Mat img = imread(path);
@@ -587,6 +669,9 @@ Mat Filter::apply(Mat img, uint filter)
 				break;
 			case F_SOBEL:
 				color = apply_sobel(img, x, y);
+				break;
+			case F_GAUSSIAN:
+				color = apply_gaussian(img, x, y, 1);
 				break;
 			}
 			img.at<Vec3b>(Point(x, y)) = color;

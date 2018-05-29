@@ -39,7 +39,7 @@ using namespace std;
  * Gris por luminancia				-WAIT
  * Sepia							-OK
  * Sobel							-OK
- * Gaussiano						-WAIT
+ * Gaussiano						-CHECK
  * Histograma normazilado			-WAIT
  * Histograma ecualizado simple		-WAIT
  * Histograma ecualizado uniforme	-WAIT
@@ -61,7 +61,7 @@ private:
 	static Vec3b apply_grayscale_luminance(Mat img, uint x, uint y);
 	static Vec3b apply_sepia(Mat img, uint x, uint y);
 	static Vec3b apply_sobel(Mat img, uint x, uint y);
-	static Vec3b apply_gaussian(Mat img, uint x, uint y);
+	static Vec3b apply_gaussian(Mat img, uint x, uint y, float sigma);
 	static Vec3b apply_normalize_histogram(Mat img, uint x, uint y);
 	static Vec3b apply_histogram_simple(Mat img, uint x, uint y);
 	static Vec3b apply_histogram_uniform(Mat img, uint x, uint y);
