@@ -16,6 +16,7 @@ int main()
 	}
 	Mat image2 = Filter::apply(image.clone(), F_SEPIA);
 	Mat image3 = Filter::apply(image.clone(), F_SOBEL);
+	Mat hist = Filter::getHistogram(image.clone(), 512, 400);
 
 	cout << "Tu imagen es de: " << image.cols << " x " << image.rows << endl;
 
@@ -27,6 +28,9 @@ int main()
 
 	namedWindow("Test03");
 	imshow("Test03", image3);
+
+	namedWindow("Histograma");
+	imshow("Histograma", hist);
 
 	waitKey(0);
 	return 1;
