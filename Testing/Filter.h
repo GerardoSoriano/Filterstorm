@@ -68,6 +68,5 @@ private:
 public:
 	static Mat apply(string path, uint filter);
 	static Mat apply(Mat img, uint filter);
-	static Mat getHistogram(Mat img, uint histSizeX, uint histSizeY);
 };
 
