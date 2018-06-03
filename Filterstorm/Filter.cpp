@@ -196,10 +196,10 @@ Vec3b Filter::apply_laplacian(Mat img, uint x, uint y)
 	Vec3b	pixel;
 	Vec3b	result;
 	int		pX, pY;
-	int		mask[3][3] = { 
-		0,  1, 0, 
-		1, -4, 1, 
-		0,  1, 0 
+	int		mask[3][3] = {
+		0,  1, 0,
+		1, -4, 1,
+		0,  1, 0
 	};
 
 	for (int i = 0; i < 3; i++)
@@ -244,9 +244,9 @@ Vec3b Filter::apply_minus_laplacian(Mat img, uint x, uint y)
 	Vec3b	result;
 	int		pX, pY;
 	int		mask[3][3] = {
-		 0, -1,  0,
+		0, -1,  0,
 		-1,  5, -1,
-		 0, -1,  0
+		0, -1,  0
 	};
 
 	for (int i = 0; i < 3; i++)
@@ -291,8 +291,8 @@ Vec3b Filter::apply_directional_north(Mat img, uint x, uint y)
 	Vec3b	result;
 	int		pX, pY;
 	int		mask[3][3] = {
-		 1,  1,  1,
-		 1, -2,  1,
+		1,  1,  1,
+		1, -2,  1,
 		-1, -1, -1
 	};
 
@@ -412,7 +412,7 @@ Vec3b Filter::apply_grayscale_luminosity(Mat img, uint x, uint y)
 	g = pixel[1];
 	r = pixel[2];
 
-	gray = (r*0.3)+(g*0.59)+(b*0.11);
+	gray = (r*0.3) + (g*0.59) + (b*0.11);
 
 
 	result = img.at<Vec3b>(Point(x, y));
@@ -462,8 +462,8 @@ Vec3b Filter::apply_sobel(Mat img, uint x, uint y)
 	};
 	int		maskY[3][3] = {
 		-1, -2, -1,
-		 0,  0,  0,
-		 1,  2,  1
+		0,  0,  0,
+		1,  2,  1
 	};
 
 	for (int i = 0; i < 3; i++)
@@ -539,8 +539,8 @@ Vec3b Filter::apply_gaussian(Mat img, uint x, uint y, float sigma)
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++)
 		{
-			pX = x + j -1;
-			pY = y + i -1;
+			pX = x + j - 1;
+			pY = y + i - 1;
 
 			if (pX > img.cols - 1 || pY > img.rows - 1) {
 				sum_b = sum_b + 0;
@@ -628,7 +628,7 @@ Mat Filter::apply(string path, uint filter)
 	return img;
 }
 
-Mat Filter::apply(Mat img, uint filter)
+void Filter::apply(Mat & img, uint filter)
 {
 	for (uint y = 1; y < (img.rows - 1); y++)
 		for (uint x = 1; x < (img.cols - 1); x++)
@@ -676,6 +676,4 @@ Mat Filter::apply(Mat img, uint filter)
 			}
 			img.at<Vec3b>(Point(x, y)) = color;
 		}
-
-	return img;
 }

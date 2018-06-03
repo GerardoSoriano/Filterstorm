@@ -24,26 +24,26 @@ using namespace std;
 #define F_HISTOGRAM_UNIFORM 17
 
 /**
- * FILTROS A REALIZAR
- * 
- * Media							-OK
- * Media ponderada					-OK
- * Substracción de la media			-OK
- * Mediana							-WAIT
- * Laplaciano						-OK
- * Menos laplaciano					-OK
- * Direccional norte				-OK
- * Direccional este					-OK
- * Gris promedio					-OK
- * Gris por luminosidad				-OK
- * Gris por luminancia				-WAIT
- * Sepia							-OK
- * Sobel							-OK
- * Gaussiano						-CHECK
- * Histograma normazilado			-WAIT
- * Histograma ecualizado simple		-WAIT
- * Histograma ecualizado uniforme	-WAIT
- */
+* FILTROS A REALIZAR
+*
+* Media							-OK
+* Media ponderada					-OK
+* Substracción de la media			-OK
+* Mediana							-WAIT
+* Laplaciano						-OK
+* Menos laplaciano					-OK
+* Direccional norte				-OK
+* Direccional este					-OK
+* Gris promedio					-OK
+* Gris por luminosidad				-OK
+* Gris por luminancia				-WAIT
+* Sepia							-OK
+* Sobel							-OK
+* Gaussiano						-CHECK
+* Histograma normazilado			-WAIT
+* Histograma ecualizado simple		-WAIT
+* Histograma ecualizado uniforme	-WAIT
+*/
 
 class Filter
 {
@@ -67,6 +67,5 @@ private:
 	static Vec3b apply_histogram_uniform(Mat img, uint x, uint y);
 public:
 	static Mat apply(string path, uint filter);
-	static Mat apply(Mat img, uint filter);
+	static void apply(Mat &img, uint filter);
 };
-

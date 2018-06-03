@@ -12,6 +12,8 @@
 #include <opencv2/video/background_segm.hpp>
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include "Picture.h"
+#include "Filter.h"
 using namespace cv;
 using namespace std;
 using namespace Gdiplus;
@@ -78,16 +80,17 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	OPENFILENAME ofn;
 	WCHAR path[260];
 
-	HWND pic_image;
-	Mat image;
+	RECT lb_pic_image;
+	Picture *picture;
 
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		pic_image = GetDlgItem(hwnd, PIC_IMAGE);
-		passOpenCVImageToControl(GetDlgItem(hwnd, PIC_IMAGE), "yolo");
-		image = imread(R"(C:\Users\gerar\OneDrive\Imágenes\Laura.jpg)");
-		imshow("yolo", image);
+		SendMessage(GetDlgItem(hwnd, PIC_IMAGE), LB_GETITEMRECT, 0, (LPARAM)&lb_pic_image);
+		Picture::adaptControl(GetDlgItem(hwnd, PIC_IMAGE), "pic_image");
+		picture = new Picture(R"(C:\Users\gerar\OneDrive\Imágenes\Laura.jpg)");
+		Filter::apply(picture->image, F_LAPLACIAN);
+		imshow("pic_image", picture->image);
 		waitKey(1);
 		return TRUE;
 	case WM_COMMAND:

@@ -1,15 +1,20 @@
 #include "Picture.h"
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/video.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 Picture::Picture(Mat _image)
 {
 	image = _image;
+	rows = image.rows;
+	cols = image.cols;
 }
 
-Picture::Picture(String path)
+Picture::Picture(string path)
 {
 	image = imread(path);
+	rows = image.rows;
+	cols = image.cols;
 }
 
 Mat Picture::getHistogram(uint histSizeX, uint histSizeY)
@@ -45,7 +50,7 @@ Mat Picture::getHistogram(uint histSizeX, uint histSizeY)
 void Picture::resize(uint targetWidth)
 {
 	int		width = image.cols,
-			height = image.rows;
+		height = image.rows;
 
 	Mat		square = Mat::zeros(targetWidth, targetWidth, image.type());
 
@@ -70,5 +75,27 @@ void Picture::resize(uint targetWidth)
 
 	cv::resize(image, square(roi), roi.size());
 
+	rows = square.rows;
+	cols = square.cols;
 	image = square;
+}
+
+bool Picture::adaptControl(HWND hwnd, string name)
+{
+	string WIN_NAME_CV = name;
+
+	namedWindow(WIN_NAME_CV, CV_WINDOW_KEEPRATIO);
+
+	HWND cvWnd = (HWND)cvGetWindowHandle(WIN_NAME_CV.c_str());
+	if (!cvWnd) return false;
+
+	HWND hOldParent = GetParent(cvWnd);
+	SetParent(cvWnd, hwnd);
+	ShowWindow(hOldParent, SW_HIDE);
+
+	//Ajustes varios
+	RECT parentRect;
+	GetClientRect(hwnd, &parentRect);
+	cvResizeWindow(WIN_NAME_CV.c_str(), parentRect.right, parentRect.bottom);
+	return true;
 }
