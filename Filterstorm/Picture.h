@@ -5,6 +5,11 @@
 using namespace cv;
 using namespace std;
 
+#define CHANNEL_RGB 0
+#define CHANNEL_R 1
+#define CHANNEL_G 2
+#define CHANNEL_B 3
+
 class Picture
 {
 public:
@@ -12,7 +17,7 @@ public:
 	int rows, cols;
 	Picture(Mat _image);
 	Picture(string path);
-	Mat getHistogram(uint histSizeX, uint histSizeY);
+	Mat getHistogram(uint histSizeX, uint histSizeY, uint channel);
 	void resize(uint width);
 	static bool adaptControl(HWND hwnd, string name);
 };

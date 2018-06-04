@@ -12,6 +12,7 @@
 #include <opencv2/video/background_segm.hpp>
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include <fstream>
 #include "Picture.h"
 #include "Filter.h"
 using namespace cv;
@@ -20,6 +21,7 @@ using namespace Gdiplus;
 
 
 HINSTANCE hInst;
+Picture *picture;
 
 BOOL CALLBACK DialogProcedure(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ImageProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -33,6 +35,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdPara
 	UNREFERENCED_PARAMETER(lpCmdParam);
 
 	hInst = hInstance;
+	picture = NULL;
 
 	HWND hwnd = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_MAIN), NULL, (DLGPROC)DialogProcedure);
 
@@ -80,20 +83,59 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	OPENFILENAME ofn;
 	WCHAR path[260];
 
-	RECT lb_pic_image;
-	Picture *picture;
+	RECT lb_pic_image, lb_pic_histogram;
+	Mat hist;
 
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		SendMessage(GetDlgItem(hwnd, PIC_IMAGE), LB_GETITEMRECT, 0, (LPARAM)&lb_pic_image);
 		Picture::adaptControl(GetDlgItem(hwnd, PIC_IMAGE), "pic_image");
-		picture = new Picture(R"(C:\Users\gerar\OneDrive\Imágenes\Laura.jpg)");
-		Filter::apply(picture->image, F_LAPLACIAN);
-		imshow("pic_image", picture->image);
+		Picture::adaptControl(GetDlgItem(hwnd, PIC_HISTOGRAM), "pic_histogram");
+
+		SendMessageW(GetDlgItem(hwnd, CB_CHANNELS), CB_ADDSTRING, 0, (LPARAM)L"Canal RGB");
+		SendMessageW(GetDlgItem(hwnd, CB_CHANNELS), CB_ADDSTRING, 0, (LPARAM)L"Canal R");
+		SendMessageW(GetDlgItem(hwnd, CB_CHANNELS), CB_ADDSTRING, 0, (LPARAM)L"Canal G");
+		SendMessageW(GetDlgItem(hwnd, CB_CHANNELS), CB_ADDSTRING, 0, (LPARAM)L"Canal B");
+
 		waitKey(1);
 		return TRUE;
 	case WM_COMMAND:
+		if (HIWORD(wParam) == CBN_SELCHANGE)
+		{
+			switch (LOWORD(wParam))
+			{
+			case CB_CHANNELS:
+				HWND hcombo = (HWND)lParam;
+				LRESULT index = SendMessageW(hcombo, CB_GETCURSEL, (WPARAM)0, (LPARAM)0);
+
+				switch (index)
+				{
+				case CHANNEL_RGB:
+					hist = picture->getHistogram(160, 132, CHANNEL_RGB);
+					imshow("pic_histogram", hist);
+					break;
+				case CHANNEL_R:
+					hist = picture->getHistogram(160, 132, CHANNEL_R);
+					imshow("pic_histogram", hist);
+					break;
+				case CHANNEL_G:
+					hist = picture->getHistogram(160, 132, CHANNEL_G);
+					imshow("pic_histogram", hist);
+					break;
+				case CHANNEL_B:
+					hist = picture->getHistogram(160, 132, CHANNEL_B);
+					imshow("pic_histogram", hist);
+					break;
+				}
+
+				/*wchar_t buf[256];
+
+				SendMessageW(hcombo, (UINT)CB_GETLBTEXT, (WPARAM)index, (LPARAM)buf);
+				MessageBoxW(hwnd, buf, L"Good Example", 0);*/
+				break;
+			}
+			break;
+		}
 		switch (LOWORD(wParam))
 		{
 		case ID_IMAGEN_CARGAR:
@@ -104,7 +146,7 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ofn.lpstrFile[0] = '\0';
 			ofn.nMaxFile = sizeof(path);
 			ofn.lpstrFilter = L"Image files (*.jpg;*.png;*.bmp)\0*.jpg;*.png;*.bmp\0"
-								"All files\0*.*\0";
+				"All files\0*.*\0";
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFileTitle = NULL;
 			ofn.nMaxFileTitle = 0;
@@ -112,7 +154,32 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 			if (GetOpenFileName(&ofn) == TRUE)
 			{
+				char fileName[260],
+					fileBuffer = ' ';
+				WideCharToMultiByte(CP_ACP, 0, path, -1, fileName, 260, &fileBuffer, NULL);
+				picture = new Picture(string(fileName));
+
+				wchar_t dimensions[100];
+				wsprintf(dimensions, L"%dpx*%dpx", picture->image.cols, picture->image.rows);
+
+				ifstream img(string(fileName).c_str(), ifstream::in | ifstream::binary);
+				img.seekg(0, ios::end);
+				int fileSize = img.tellg();
+				img.close();
+				wchar_t size[100];
+				wsprintf(size, L"%dKB", fileSize / 1000);
+
+				SetDlgItemText(hwnd, LBL_DIMENSIONS, dimensions);
+				SetDlgItemText(hwnd, LBL_SIZE, size);
 				SetDlgItemText(hwnd, LBL_PATH, path);
+
+				imshow("pic_image", picture->image);
+				SendMessage(GetDlgItem(hwnd, PIC_IMAGE), LB_GETITEMRECT, 0, (LPARAM)&lb_pic_histogram);
+				hist = picture->getHistogram(160, 132, CHANNEL_RGB);
+				imshow("pic_histogram", hist);
+
+				EnableWindow(GetDlgItem(hwnd, CB_CHANNELS), true);
+				SendMessage(GetDlgItem(hwnd, CB_CHANNELS), CB_SETCURSEL, 0, 0);
 			}
 			break;
 		}

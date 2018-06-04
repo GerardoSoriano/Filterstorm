@@ -17,7 +17,7 @@ Picture::Picture(string path)
 	cols = image.cols;
 }
 
-Mat Picture::getHistogram(uint histSizeX, uint histSizeY)
+Mat Picture::getHistogram(uint histSizeX, uint histSizeY, uint channel)
 {
 	std::vector<Mat>	bgr;
 	int					histSize = 256;
@@ -39,9 +39,23 @@ Mat Picture::getHistogram(uint histSizeX, uint histSizeY)
 
 	for (int i = 1; i < histSize; i++)
 	{
-		line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_b.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_b.at<float>(i))), Scalar(255, 0, 0), 2, 8, 0);
-		line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_g.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_g.at<float>(i))), Scalar(0, 255, 0), 2, 8, 0);
-		line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_r.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_r.at<float>(i))), Scalar(0, 0, 255), 2, 8, 0);
+		switch (channel)
+		{
+		case CHANNEL_RGB:
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_b.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_b.at<float>(i))), Scalar(255, 0, 0), 1, 8, 0);
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_g.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_g.at<float>(i))), Scalar(0, 255, 0), 1, 8, 0);
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_r.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_r.at<float>(i))), Scalar(0, 0, 255), 1, 8, 0);
+			break;
+		case CHANNEL_R:
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_r.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_r.at<float>(i))), Scalar(0, 0, 255), 1, 8, 0);
+			break;
+		case CHANNEL_G:
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_g.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_g.at<float>(i))), Scalar(0, 255, 0), 1, 8, 0);
+			break;
+		case CHANNEL_B:
+			line(histImage, Point(histWidth*(i - 1), histSizeY - cvRound(hist_b.at<float>(i - 1))), Point(histWidth*(i), histSizeY - cvRound(hist_b.at<float>(i))), Scalar(255, 0, 0), 1, 8, 0);
+			break;
+		}
 	}
 
 	return histImage;
