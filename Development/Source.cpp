@@ -12,7 +12,7 @@ int main()
 		cout << "No se pudo abrir la imagen chavo" << endl;
 		return -1;
 	}
-	Mat image2 = DevFilter::gaussian(R"(C:\Users\gerar\OneDrive\Imágenes\Dexter1.jpg)", 2);
+	Mat image2 = DevFilter::sobel(R"(C:\Users\gerar\OneDrive\Imágenes\Dexter1.jpg)");
 
 	cout << "Tu imagen es de: " << image.cols << " x " << image.rows << endl;
 

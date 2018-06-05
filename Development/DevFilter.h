@@ -29,14 +29,14 @@ using namespace std;
 * Media								-OK
 * Media ponderada					-OK
 * Substracción de la media			-OK
-* Mediana							-WAIT
+* Mediana							-OK
 * Laplaciano						-OK
 * Menos laplaciano					-OK
 * Direccional norte					-OK
 * Direccional este					-OK
 * Gris promedio						-OK
 * Gris por luminosidad				-OK
-* Gris por luminancia				-WAIT
+* Gris por luminancia				-OK
 * Sepia								-OK
 * Sobel								-OK
 * Gaussiano							-CHECK
@@ -47,28 +47,19 @@ using namespace std;
 
 class DevFilter
 {
-private:
-	static void apply_median(float(&bgr)[3], uint x, uint y, uint rows, uint cols, int(&color)[3]);
-	static int* apply_weighted_median(float bgr[], uint x, uint y, uint weight);
-	static int* apply_minus_median(float bgr[], uint x, uint y);
-	static int* apply_average(float bgr[], uint x, uint y);
-	static int* apply_laplacian(float bgr[], uint x, uint y);
-	static int* apply_minus_laplacian(float bgr[], uint x, uint y);
-	static int* apply_directional_north(float bgr[], uint x, uint y);
-	static int* apply_directional_east(float bgr[], uint x, uint y);
-	static int* apply_grayscale_average(float bgr[], uint x, uint y);
-	static int* apply_grayscale_luminosity(Mat img, uint x, uint y);
-	static int* apply_grayscale_luminance(Mat img, uint x, uint y);
-	static void apply_sepia(float(&bgr)[3], uint x, uint y, int(&color)[3]);
-	static int* apply_sobel(Mat img, uint x, uint y);
-	static int* apply_gaussian(Mat img, uint x, uint y, float sigma);
-	static int* apply_normalize_histogram(Mat img, uint x, uint y);
-	static int* apply_histogram_simple(Mat img, uint x, uint y);
-	static int* apply_histogram_uniform(Mat img, uint x, uint y);
 public:
-	static Mat apply(string path, uint filter);
-	static void apply(Mat &img, uint filter);
-
 	static Mat median(string path);
+	static Mat weighted_median(string path, float weight);
+	static Mat minus_median(string path);
+	static Mat average(string path);
+	static Mat laplacian(string path);
+	static Mat minus_laplacian(string path);
+	static Mat directional_north(string path);
+	static Mat directional_east(string path);
+	static Mat grayscale_average(string path);
+	static Mat grayscale_luminosity(string path);
+	static Mat grayscale_luminance(string path);
+	static Mat sepia(string path);
+	static Mat sobel(string path);
 	static Mat gaussian(string path, float sigma);
 };
