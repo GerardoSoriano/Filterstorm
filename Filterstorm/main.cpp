@@ -19,6 +19,14 @@ using namespace cv;
 using namespace std;
 using namespace Gdiplus;
 
+struct Record
+{
+	Record *back;
+	uint id;
+	uint filter;
+	Picture *picture;
+	Record *next;
+};
 
 HINSTANCE hInst;
 Picture *picture;
@@ -26,8 +34,6 @@ Picture *picture;
 BOOL CALLBACK DialogProcedure(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK ImageProcedure(HWND, UINT, WPARAM, LPARAM);
 BOOL CALLBACK VideoProcedure(HWND, UINT, WPARAM, LPARAM);
-
-bool passOpenCVImageToControl(HWND, string);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdParam, int nCmdShow)
 {
@@ -154,8 +160,8 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 			if (GetOpenFileName(&ofn) == TRUE)
 			{
-				char fileName[260],
-					fileBuffer = ' ';
+				char fileName[260];
+				char fileBuffer = ' ';
 				WideCharToMultiByte(CP_ACP, 0, path, -1, fileName, 260, &fileBuffer, NULL);
 				picture = new Picture(string(fileName));
 
@@ -189,24 +195,4 @@ BOOL CALLBACK ImageProcedure(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return FALSE;
-}
-
-bool passOpenCVImageToControl(HWND parentWnd, string nombreShow)
-{
-	string WIN_NAME_CV = nombreShow;
-
-	namedWindow(WIN_NAME_CV, CV_WINDOW_KEEPRATIO);
-
-	HWND cvWnd = (HWND)cvGetWindowHandle(WIN_NAME_CV.c_str());
-	if (!cvWnd) return false;
-
-	HWND hOldParent = ::GetParent(cvWnd);
-	::SetParent(cvWnd, parentWnd);
-	::ShowWindow(hOldParent, SW_HIDE);
-
-	//Ajustes varios
-	RECT parentRect;
-	::GetClientRect(parentWnd, &parentRect);
-	cvResizeWindow(WIN_NAME_CV.c_str(), parentRect.right, parentRect.bottom);
-	return true;
 }
