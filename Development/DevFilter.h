@@ -62,4 +62,34 @@ public:
 	static Mat sepia(string path);
 	static Mat sobel(string path);
 	static Mat gaussian(string path, float sigma);
+
+	static Mat median(Mat img);
+	static Mat weighted_median(Mat img, float weight);
+	static Mat minus_median(Mat img);
+	static Mat average(Mat img);
+	static Mat laplacian(Mat img);
+	static Mat minus_laplacian(Mat img);
+	static Mat directional_north(Mat img);
+	static Mat directional_east(Mat img);
+	static Mat grayscale_average(Mat img);
+	static Mat grayscale_luminosity(Mat img);
+	static Mat grayscale_luminance(Mat img);
+	static Mat sepia(Mat img);
+	static Mat sobel(Mat img);
+	static Mat gaussian(Mat img, float sigma);
+
+	static void median(Mat &img);
+	static void weighted_median(Mat &img, float weight);
+	static void minus_median(Mat &img);
+	static void average(Mat &img);
+	static void laplacian(Mat &img);
+	static void minus_laplacian(Mat &img);
+	static void directional_north(Mat &img);
+	static void directional_east(Mat &img);
+	static void grayscale_average(Mat &img);
+	static void grayscale_luminosity(Mat &img);
+	static void grayscale_luminance(Mat &img);
+	static void sepia(Mat &img);
+	static void sobel(Mat &img);
+	static void gaussian(Mat &img, float sigma);
 };
